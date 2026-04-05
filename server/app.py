@@ -98,6 +98,16 @@ _last_grader: Dict[str, float] = {
 }
 
 
+@app.get("/")
+def root() -> Dict[str, Any]:
+    return {
+        "name": "atc-advisor-v0",
+        "status": "healthy",
+        "health": "/health",
+        "docs": "/docs",
+    }
+
+
 @app.get("/health", response_model=HealthResponseModel)
 def health() -> HealthResponseModel:
     return {"status": "healthy"}
