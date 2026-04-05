@@ -4,6 +4,8 @@ emoji: "🛫"
 colorFrom: blue
 colorTo: indigo
 sdk: docker
+tags:
+  - openenv
 pinned: false
 ---
 
@@ -214,10 +216,10 @@ Use this format in your submission report:
 
 | Task | Score |
 |------|-------|
-| task_easy_safety | 0.xx |
-| task_medium_efficiency | 0.xx |
-| task_hard_phraseology | 0.xx |
-| overall | 0.xx |
+| task_easy_safety | 0.7665 |
+| task_medium_efficiency | 0.8325 |
+| task_hard_phraseology | 0.8337 |
+| overall | 0.8109 |
 
 ## OpenEnv manifest
 
