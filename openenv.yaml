@@ -1,0 +1,7 @@
+name: atc-advisor-v0
+description: AI Co-Pilot for Air Traffic Controllers — MergeEnv-v0 (BlueSky-Gym). Agent suggests realistic clearances (heading, speed, altitude, takeoff/landing) while managing merging traffic, conflict resolution, and efficiency.
+version: 0.1.0
+author: YourName
+license: MIT
+entrypoint: atc_advisor_env:ATCAdvisorEnv
+tags: [air-traffic-control, atc, safety-critical, rl, openenv]

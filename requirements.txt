@@ -1,0 +1,12 @@
+bluesky-gym
+gymnasium
+numpy
+openai
+openenv
+fastapi
+uvicorn[standard]
+pydantic
+trl
+requests
+datasets
+transformers

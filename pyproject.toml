@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "atc-advisor-v0"
+version = "0.1.0"
+description = "OpenEnv ATC merge advisory environment using BlueSky-Gym MergeEnv-v0"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [
+  { name = "Sankalp Setia" }
+]
+dependencies = [
+  "bluesky-gym",
+  "gymnasium",
+  "numpy",
+  "openai",
+  "openenv",
+  "fastapi",
+  "uvicorn[standard]",
+  "pydantic",
+  "trl",
+  "requests",
+  "datasets",
+  "transformers"
+]
+
+[tool.setuptools]
+py-modules = ["atc_advisor_env", "models", "client", "baseline_inference", "inference"]
+
+[project.scripts]
+server = "server.app:main"
