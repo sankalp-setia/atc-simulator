@@ -1,3 +1,12 @@
+---
+title: atc-advisor-v0
+emoji: "🛫"
+colorFrom: blue
+colorTo: indigo
+sdk: docker
+pinned: false
+---
+
 # atc-advisor-v0
 
 `atc-advisor-v0` is a real-world OpenEnv environment for **air traffic merge advisory**. The agent acts as an AI co-pilot to issue clearances for merging arrivals on approach while balancing safety, efficiency, and phraseology compliance.
