@@ -62,6 +62,15 @@ def _task_difficulty(task_name: str) -> str:
     return "medium"
 
 
+def _strict_score(value: float) -> float:
+    v = float(max(0.0, min(1.0, float(value))))
+    if v <= 0.0:
+        return 0.01
+    if v >= 1.0:
+        return 0.99
+    return float(v)
+
+
 def _retry_after_seconds(error_text: str) -> float:
     match = re.search(r"retry in\s+([0-9]+(?:\.[0-9]+)?)s", error_text, re.IGNORECASE)
     if match:
@@ -109,6 +118,7 @@ def run_episode(task_name: str, benchmark: str, max_steps: int, seed: int) -> in
     done = False
     success = False
     fatal_error = False
+    final_score = 0.01
 
     print(f"[START] task={task_name} env={benchmark} model={MODEL_NAME}")
 
@@ -133,6 +143,8 @@ def run_episode(task_name: str, benchmark: str, max_steps: int, seed: int) -> in
                 raw_error = info_dict.get("last_action_error")
                 if raw_error is not None:
                     last_action_error = str(raw_error)
+                grader_scores = info.get("grader_scores", {}) if isinstance(info, dict) else {}
+                final_score = _strict_score(float(grader_scores.get("overall", final_score)))
             except Exception as exc:
                 fatal_error = True
                 done = True
@@ -152,7 +164,7 @@ def run_episode(task_name: str, benchmark: str, max_steps: int, seed: int) -> in
         env.close()
         rewards_text = ",".join(_fmt_reward(r) for r in rewards)
         print(
-            f"[END] success={_bool_text(success)} steps={step_count} rewards={rewards_text}"
+            f"[END] success={_bool_text(success)} steps={step_count} score={_fmt_reward(final_score)} rewards={rewards_text}"
         )
 
     return 0

@@ -212,8 +212,6 @@ docker run --rm -p 8000:8000 atc-advisor-v0
 
 ## Example baseline score table format
 
-Use this format in your submission report:
-
 | Task | Score |
 |------|-------|
 | task_easy_safety | 0.7665 |

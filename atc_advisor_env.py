@@ -380,11 +380,22 @@ class ATCAdvisorEnv:
         if done and conflicts > 0:
             overall *= 0.8
 
+        # Some hackathon validators require strictly interior scores: 0.0 < score < 1.0.
+        eps = 1e-3
+
+        def _strict_unit_interval(value: float) -> float:
+            v = float(np.clip(value, 0.0, 1.0))
+            if v <= 0.0:
+                return float(eps)
+            if v >= 1.0:
+                return float(1.0 - eps)
+            return float(v)
+
         return {
-            "task_easy_safety": easy_safety,
-            "task_medium_efficiency": medium_efficiency,
-            "task_hard_phraseology": hard_phraseology,
-            "overall": overall,
+            "task_easy_safety": _strict_unit_interval(easy_safety),
+            "task_medium_efficiency": _strict_unit_interval(medium_efficiency),
+            "task_hard_phraseology": _strict_unit_interval(hard_phraseology),
+            "overall": _strict_unit_interval(overall),
         }
 
     def _compute_progress_score(self, distance_to_faf: Optional[float]) -> float:
