@@ -8,7 +8,7 @@ from typing import Any, Dict, List
 
 from openai import OpenAI
 
-from atc_advisor_env import ATCAdvisorEnv, extract_clearance
+from atc_advisor_env import ATCAction, ATCAdvisorEnv, extract_clearance
 from baseline_inference import DEFAULT_SYSTEM_PROMPT, TASKS
 
 API_BASE_URL = os.getenv("API_BASE_URL", "https://generativelanguage.googleapis.com/v1beta/openai/")
@@ -88,6 +88,51 @@ def _strict_score(value: float) -> float:
     return float(v)
 
 
+def _sanitize_action(action: ATCAction) -> ATCAction:
+    command = str(action.command or "hold").lower()
+    allowed = {"heading", "speed", "altitude", "takeoff", "land", "hold", "vector"}
+    if command not in allowed:
+        command = "hold"
+
+    callsign = str(action.callsign or "OWN").upper()
+    value = action.value
+    runway = action.runway
+
+    if command in {"heading", "vector"}:
+        if value is None:
+            value = 180.0
+        value = float(value) % 360.0
+        runway = None
+    elif command == "speed":
+        if value is None:
+            value = 210.0
+        value = float(max(140.0, min(280.0, float(value))))
+        runway = None
+    elif command == "altitude":
+        if value is None:
+            value = 10000.0
+        value = float(max(3000.0, min(14000.0, float(value))))
+        runway = None
+    elif command == "hold":
+        value = 0.0
+        runway = None
+    else:
+        value = None
+
+    return ATCAction(callsign=callsign, command=command, value=value, runway=runway)
+
+
+def _fallback_action(obs: Any) -> ATCAction:
+    conflicts = int(getattr(obs, "conflicts", 0) or 0)
+    active_aircraft = int(getattr(obs, "active_aircraft", 0) or 0)
+
+    if conflicts > 0:
+        return ATCAction(callsign="OWN", command="heading", value=180.0)
+    if active_aircraft >= 8:
+        return ATCAction(callsign="OWN", command="speed", value=200.0)
+    return ATCAction(callsign="OWN", command="hold", value=0.0)
+
+
 def _retry_after_seconds(error_text: str) -> float:
     match = re.search(r"retry in\s+([0-9]+(?:\.[0-9]+)?)s", error_text, re.IGNORECASE)
     if match:
@@ -150,8 +195,13 @@ def run_episode(task_name: str, benchmark: str, max_steps: int, seed: int) -> in
 
             try:
                 prompt = _build_user_prompt(obs.radar_text, step_count)
-                completion_text = _generate_with_retry(client, prompt)
-                action = extract_clearance(completion_text)
+                try:
+                    completion_text = _generate_with_retry(client, prompt)
+                    action = _sanitize_action(extract_clearance(completion_text))
+                except Exception as model_exc:
+                    action = _fallback_action(obs)
+                    last_action_error = f"model_error:{str(model_exc)[:120]}"
+
                 action_payload = action.model_dump(exclude_none=True)
                 action_str = _format_action_for_log(action_payload)
 

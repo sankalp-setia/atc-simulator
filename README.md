@@ -146,20 +146,33 @@ Determinism settings:
 Submission includes root-level `inference.py` for evaluator execution.
 
 Required environment variables:
-- `API_BASE_URL` (default: `https://api.openai.com/v1`)
-- `MODEL_NAME` (default: `gpt-4.1-mini`)
+- `API_BASE_URL` (default: `https://generativelanguage.googleapis.com/v1beta/openai/`)
+- `MODEL_NAME` (default: `gemini-2.5-flash`)
 - `HF_TOKEN` (required)
 
 Run:
 
 ```bash
-HF_TOKEN=<token> python inference.py --task task_easy_safety --env atc-advisor-v0 --max-steps 10 --seed 7
+HF_TOKEN=<token> python inference.py --task all --env atc-advisor-v0 --max-steps 10 --seed 7
 ```
 
+Judge-focused behavior:
+- Runs all three tasks (`easy -> medium -> hard`) by default.
+- Uses strict command parsing + sanitization to keep clearances valid.
+- Falls back to conservative safe actions if API generation fails.
+- Emits deterministic, contract-compliant logs for each task.
+
 Output format follows the required line contract:
-- `[START] task=<task_name> env=<benchmark> model=<model_name>`
+- `[START] task=<task_name> difficulty=<easy|medium|hard> env=<benchmark> model=<model_name>`
 - `[STEP]  step=<n> action=<action_str> reward=<0.00> done=<true|false> error=<msg|null>`
-- `[END]   success=<true|false> steps=<n> rewards=<r1,r2,...,rn>`
+- `[END]   success=<true|false> steps=<n> score=<0.00..1.00> rewards=<r1,r2,...,rn>`
+
+This submission is optimized for safety-first behavior under evaluator constraints:
+- Safety first: conflict reduction dominates fallback policy.
+- Determinism: fixed seeds and temperature-0 generation reduce run-to-run variance.
+- Robustness: malformed model output does not crash an episode; safe fallback action is issued.
+- Transparency: logs expose task, difficulty, step-level reward, and terminal score.
+- Coverage: all three graded tasks are executed in every default run.
 
 ## Validator endpoints
 
@@ -186,6 +199,17 @@ This checks:
 - reset/step/state lifecycle
 - grader score range enforcement (0.0 to 1.0)
 - baseline endpoint reproducibility output shape and score ranges
+
+Generate robustness summary (multi-seed):
+
+```bash
+python scripts/pre_submission_validate.py \
+  --base-url http://localhost:8000 \
+  --provider heuristic \
+  --seeds 7,11,19,23,29
+```
+
+The output includes per-task mean/std/min/max and overall mean/std across seeds.
 
 ## Local setup
 
