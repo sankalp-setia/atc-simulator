@@ -62,6 +62,23 @@ def _task_difficulty(task_name: str) -> str:
     return "medium"
 
 
+def _ordered_tasks() -> List[Dict[str, Any]]:
+    rank = {"easy": 0, "medium": 1, "hard": 2}
+    return sorted(TASKS, key=lambda t: rank.get(str(t.get("difficulty", "medium")), 99))
+
+
+def _resolve_tasks(task_name: str) -> List[Dict[str, Any]]:
+    if task_name in {"all", "*"}:
+        return _ordered_tasks()
+
+    for task in TASKS:
+        if str(task.get("id")) == task_name:
+            return [task]
+
+    valid = ", ".join(str(task.get("id")) for task in _ordered_tasks())
+    raise ValueError(f"Unknown task '{task_name}'. Valid values: all, {valid}")
+
+
 def _strict_score(value: float) -> float:
     v = float(max(0.0, min(1.0, float(value))))
     if v <= 0.0:
@@ -120,7 +137,7 @@ def run_episode(task_name: str, benchmark: str, max_steps: int, seed: int) -> in
     fatal_error = False
     final_score = 0.01
 
-    print(f"[START] task={task_name} env={benchmark} model={MODEL_NAME}")
+    print(f"[START] task={task_name} difficulty={difficulty} env={benchmark} model={MODEL_NAME}")
 
     try:
         obs = env.reset(seed=seed)
@@ -172,7 +189,7 @@ def run_episode(task_name: str, benchmark: str, max_steps: int, seed: int) -> in
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Hackathon inference runner")
-    parser.add_argument("--task", type=str, default="task_easy_safety")
+    parser.add_argument("--task", type=str, default="all")
     parser.add_argument("--env", type=str, default="atc-advisor-v0")
     parser.add_argument("--max-steps", type=int, default=10)
     parser.add_argument("--seed", type=int, default=7)
@@ -181,11 +198,12 @@ def parse_args() -> argparse.Namespace:
 
 if __name__ == "__main__":
     args = parse_args()
-    raise SystemExit(
+    tasks_to_run = _resolve_tasks(args.task)
+    for i, task in enumerate(tasks_to_run):
         run_episode(
-            task_name=args.task,
+            task_name=str(task["id"]),
             benchmark=args.env,
             max_steps=args.max_steps,
-            seed=args.seed,
+            seed=args.seed + i,
         )
-    )
+    raise SystemExit(0)

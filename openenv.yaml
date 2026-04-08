@@ -11,21 +11,21 @@ runtime: fastapi
 app: server.app:app
 port: 7860
 tasks:
-	- id: task_easy_safety
-		difficulty: easy
-		objective: Maintain zero conflicts for light traffic merge operations.
-		grader:
-			type: deterministic
-			source: info.grader_scores.task_easy_safety
-	- id: task_medium_efficiency
-		difficulty: medium
-		objective: Balance safe separation and efficient progression to merge profile.
-		grader:
-			type: deterministic
-			source: info.grader_scores.task_medium_efficiency
-	- id: task_hard_phraseology
-		difficulty: hard
-		objective: Maintain safety under dense traffic while preserving command compliance.
-		grader:
-			type: deterministic
-			source: info.grader_scores.task_hard_phraseology
+  - id: task_easy_safety
+    difficulty: easy
+    objective: Maintain zero conflicts for light traffic merge operations.
+    grader:
+      type: deterministic
+      source: info.grader_scores.task_easy_safety
+  - id: task_medium_efficiency
+    difficulty: medium
+    objective: Balance safe separation and efficient progression to merge profile.
+    grader:
+      type: deterministic
+      source: info.grader_scores.task_medium_efficiency
+  - id: task_hard_phraseology
+    difficulty: hard
+    objective: Maintain safety under dense traffic while preserving command compliance.
+    grader:
+      type: deterministic
+      source: info.grader_scores.task_hard_phraseology
